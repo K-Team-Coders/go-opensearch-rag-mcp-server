@@ -21,6 +21,14 @@ class Settings(BaseSettings):
     GO_OPENSEARCH_DATABASE_SEARCH_DOCUMENTS_ENDPOINT: str = "/api/v1/search/documents"
     GO_OPENSEARCH_DATABASE_SEARCH_FILTER_DOCUMENTS_ENDPOINT: str = "/api/v1/search/filter_documents"
     GO_OPENSEARCH_DATABASE_INDEXES_ENDPOINT: str = "/api/v1/index-manager/indexes"
+    GO_OPENSEARCH_DATABASE_AGENT_ENDPOINT: str = "/api/v1/agents/agent"
+    GO_OPENSEARCH_DATABASE_AGENTS_ENDPOINT: str = "/api/v1/agents/agents"
+    GO_OPENSEARCH_DATABASE_NODE_ENDPOINT: str = "/api/v1/agents/node"
+    GO_OPENSEARCH_DATABASE_NODES_ENDPOINT: str = "/api/v1/agents/nodes"
+    GO_OPENSEARCH_DATABASE_EDGE_ENDPOINT: str = "/api/v1/agents/edge"
+    GO_OPENSEARCH_DATABASE_EDGES_ENDPOINT: str = "/api/v1/agents/edges"
+    GO_OPENSEARCH_DATABASE_GRAPH_ENDPOINT: str = "/api/v1/agents/graph"
+    GO_OPENSEARCH_DATABASE_GRAPHS_ENDPOINT: str = "/api/v1/agents/graphs"
 
     # Creds for tests
     TEST_PROVIDER_BASE_URL: Optional[str] = None
@@ -51,6 +59,38 @@ class Settings(BaseSettings):
     @property
     def go_opensearch_database_indexes_endpoint(self) -> str:
         return f"{self.GO_OPENSEARCH_DATABASE_URL}{self.GO_OPENSEARCH_DATABASE_INDEXES_ENDPOINT}"
+
+    @property
+    def go_opensearch_database_agent_endpoint(self) -> str:
+        return f"{self.GO_OPENSEARCH_DATABASE_URL}{self.GO_OPENSEARCH_DATABASE_AGENT_ENDPOINT}"
+
+    @property
+    def go_opensearch_database_agents_endpoint(self) -> str:
+        return f"{self.GO_OPENSEARCH_DATABASE_URL}{self.GO_OPENSEARCH_DATABASE_AGENTS_ENDPOINT}"
+
+    @property
+    def go_opensearch_database_node_endpoint(self) -> str:
+        return f"{self.GO_OPENSEARCH_DATABASE_URL}{self.GO_OPENSEARCH_DATABASE_NODE_ENDPOINT}"
+
+    @property
+    def go_opensearch_database_nodes_endpoint(self) -> str:
+        return f"{self.GO_OPENSEARCH_DATABASE_URL}{self.GO_OPENSEARCH_DATABASE_NODES_ENDPOINT}"
+
+    @property
+    def go_opensearch_database_edge_endpoint(self) -> str:
+        return f"{self.GO_OPENSEARCH_DATABASE_URL}{self.GO_OPENSEARCH_DATABASE_EDGE_ENDPOINT}"
+
+    @property
+    def go_opensearch_database_edges_endpoint(self) -> str:
+        return f"{self.GO_OPENSEARCH_DATABASE_URL}{self.GO_OPENSEARCH_DATABASE_EDGES_ENDPOINT}"
+
+    @property
+    def go_opensearch_database_graph_endpoint(self) -> str:
+        return f"{self.GO_OPENSEARCH_DATABASE_URL}{self.GO_OPENSEARCH_DATABASE_GRAPH_ENDPOINT}"
+
+    @property
+    def go_opensearch_database_graphs_endpoint(self) -> str:
+        return f"{self.GO_OPENSEARCH_DATABASE_URL}{self.GO_OPENSEARCH_DATABASE_GRAPHS_ENDPOINT}"
 
 
 settings = Settings()  # type: ignore

@@ -7,11 +7,12 @@ MCP-сервер на Python для работы с данными из `go-open
 - получать текущее время;
 - искать документы и фрагменты текста в OpenSearch;
 - получать, записывать и удалять описания книг;
-- получать список доступных индексов.
+- получать список доступных индексов;
+- создавать и обслуживать агентов, графы, узлы и ребра для агентных сценариев.
 
 ## Что внутри
 
-Основной сервер запускается из [`main.py`](/c:/Users/Undefined/Documents/GitHub/go-opensearch-rag-mcp-server/main.py) и подключает три под-сервера:
+Основной сервер запускается из [`main.py`](/c:/Users/Undefined/Documents/GitHub/go-opensearch-rag-mcp-server/main.py) и подключает четыре под-сервера:
 
 - `search`:
   поиск документов и список книг в индексе;
@@ -19,6 +20,8 @@ MCP-сервер на Python для работы с данными из `go-open
   чтение и изменение описаний книг;
 - `resources`:
   доступ к списку индексов.
+- `agents`:
+  CRUD для agents/nodes/edges/graphs и последовательное создание графов агентом.
 
 Транспорт запуска: `streamable-http`.
 
@@ -58,6 +61,73 @@ MCP-сервер на Python для работы с данными из `go-open
   Возвращает список доступных индексов.
 
 Дополнительно сервер публикует ресурс `resource://indexes`.
+
+### `agents`
+
+CRUD-инструменты:
+
+- `agents_list_agents()`, `agents_get_agent(uuid)`, `agents_create_agent(item)`, `agents_update_agent(uuid, item)`, `agents_patch_agent(uuid, item)`, `agents_delete_agent(uuid)`
+- `agents_list_nodes()`, `agents_get_node(uuid)`, `agents_create_node(item)`, `agents_update_node(uuid, item)`, `agents_patch_node(uuid, item)`, `agents_delete_node(uuid)`
+- `agents_list_edges()`, `agents_get_edge(uuid)`, `agents_create_edge(item)`, `agents_update_edge(uuid, item)`, `agents_patch_edge(uuid, item)`, `agents_delete_edge(uuid)`
+- `agents_list_graphs()`, `agents_get_graph(uuid)`, `agents_get_full_graph(uuid)`, `agents_create_graph(item)`, `agents_update_graph(uuid, item)`, `agents_patch_graph(uuid, item)`, `agents_delete_graph(uuid)`
+
+Правила для LLM:
+
+- `agent_type`: только `orchestrator` или `agent`;
+- `model`: по умолчанию `openrouter::x-ai/grok-4.1-fast`;
+- `agents`: обычно оставлять `[]`;
+- `mcp_permissions`: router-сервисы `search`, `descriptions`, `agents`;
+- `resources` не использовать в `mcp_permissions`;
+- `node.type`: `INPUT` для входной ноды графа, обычно оркестратор; `CUSTOM` для промежуточной ноды; `OUTPUT` для финальной ноды;
+- для агентного графа обычно создается несколько agents: каждая роль графа получает свой agent, а node ссылается на него через `agent_id`;
+- граф создается только последовательными CRUD-вызовами: сначала `agents_create_agent`, затем `agents_create_node`, затем `agents_create_edge`, затем `agents_create_graph`;
+- перед созданием агент должен проверить существующие agents/nodes/edges/graphs через list tools и не создавать дубли;
+- если create возвращает только статус, id нужно получить через list tools: `agents_list_agents`, `agents_list_nodes`, `agents_list_edges`, `agents_list_graphs`;
+- для новых объектов используйте уникальные имена с коротким run id, чтобы надежно найти созданный объект в list results;
+- если list показывает уже существующий подходящий объект, агент может переиспользовать его вместо создания дубля;
+- если нужно понять устройство существующего графа, использовать `agents_get_full_graph(uuid)`.
+
+Упрощенный пример последовательного создания. Для реального агентного графа шаги `agents_create_agent` и `agents_create_node` повторяются для каждой роли графа.
+
+```text
+1. agents_create_agent({
+  "item": {
+    "name": "Rules Agent",
+    "agent_description": "Answers questions using RAG tools.",
+    "agent_type": "orchestrator",
+    "model": "openrouter::x-ai/grok-4.1-fast",
+    "system_prompt": "Use available MCP tools to answer accurately.",
+    "agents": [],
+    "mcp_permissions": ["search", "descriptions"]
+  }
+})
+
+2. agents_create_node({
+  "item": {
+    "agent_id": "<agent_id from step 1>",
+    "name": "Node Rules Orchestrator",
+    "description": "Use available MCP tools to answer accurately.",
+    "type": "INPUT"
+  }
+})
+
+3. agents_create_edge({
+  "item": {
+    "from": "<source_node_id>",
+    "to": "<target_node_id>",
+    "name": "RulesOrchestrator-Searcher"
+  }
+})
+
+4. agents_create_graph({
+  "item": {
+    "name": "RAG answer graph",
+    "description": "Minimal graph for answering with retrieved context.",
+    "nodes": [{"id": "<node_id>", "name": "Node Rules Orchestrator"}],
+    "edges": [{"id": "<edge_id>", "name": "RulesOrchestrator-Searcher"}]
+  }
+})
+```
 
 ## Зависимости
 
@@ -156,7 +226,8 @@ poetry run pytest
 |-- servers/
 |   |-- search/
 |   |-- descriptions/
-|   `-- resourses/
+|   |-- resourсes/
+|   `-- agents/
 |-- Dockerfile
 `-- pyproject.toml
 ```

@@ -4,7 +4,7 @@ from datetime import datetime
 from loguru import logger
 from fastmcp import FastMCP
 
-from servers import search_mcp, descriptions_mcp, resourсes_mcp
+from servers import search_mcp, descriptions_mcp, resourсes_mcp, agents_mcp
 from settings import settings
 
 # Define main server
@@ -24,6 +24,7 @@ async def setup():
     await main_mcp.import_server(search_mcp, prefix="search")
     await main_mcp.import_server(descriptions_mcp, prefix="descriptions")
     await main_mcp.import_server(resourсes_mcp, prefix="resources")
+    await main_mcp.import_server(agents_mcp, prefix="agents")
 
 if __name__ == "__main__":
     asyncio.run(setup())
